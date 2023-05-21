@@ -1,10 +1,6 @@
 ﻿//Ethan Alexander Shulman 2017
 
-using System;
-using System.Threading;
-using System.IO;
-
-namespace TextGenerater
+namespace NeuralNetwork
 {
 
     /// <summary>

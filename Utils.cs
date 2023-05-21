@@ -1,11 +1,8 @@
 //Ethan Alexander Shulman 2017
 
-using System;
-using System.IO;
 using System.Net;
-using System.Collections.Generic;
 
-namespace TextGenerater
+namespace NeuralNetwork
 {
     public class Utils {
         //a few util functions used 

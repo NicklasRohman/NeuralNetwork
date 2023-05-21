@@ -1,11 +1,6 @@
 //Ethan Alexander Shulman 2017
 
-using System;
-using System.Threading;
-using System.IO;
-using System.Collections.Generic;
-
-namespace TextGenerater
+namespace NeuralNetwork
 {
     /// <summary>
     /// Trains a NeuralNetwork through QLearning(action-reward system)

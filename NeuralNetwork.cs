@@ -10,16 +10,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  * 
  */
 
-
-
-using System;
-using System.IO;
-using System.Net;
-using System.Threading;
-using System.Collections.Generic;
-
-
-namespace TextGenerater
+namespace NeuralNetwork
 {
     //neural network class
     /// <summary>

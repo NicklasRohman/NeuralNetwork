@@ -1,6 +1,6 @@
 ﻿//Ethan Alexander Shulman 2017
 
-namespace TextGenerater
+namespace NeuralNetwork
 {
     /// <summary>
     /// NeuralNetwork executor.

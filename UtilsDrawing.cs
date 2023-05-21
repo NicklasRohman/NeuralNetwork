@@ -1,10 +1,9 @@
 ﻿//Ethan Alexander Shulman 2017
 
-using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace TextGenerater
+namespace NeuralNetwork
 {
     public class UtilsDrawing
     {
