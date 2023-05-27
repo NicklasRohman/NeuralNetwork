@@ -1,11 +1,13 @@
 ﻿//Ethan Alexander Shulman 2017
 
+using NeuralNetwork.interfaces;
+
 namespace NeuralNetwork
 {
     /// <summary>
     /// NeuralNetwork executor.
     /// </summary>
-    public class NeuralNetworkProgram
+    public class NeuralNetworkProgram : INeuralNetworkProgram
     {
         /// <summary>
         /// NeuralNetwork.
@@ -15,7 +17,7 @@ namespace NeuralNetwork
         /// <summary>
         /// Execution memory like input/output.
         /// </summary>
-        public NeuralNetworkContext context = new NeuralNetworkContext();
+        public NeuralNetworkContext context = new();
 
         /// <summary>
         /// Flag indicating new input data.

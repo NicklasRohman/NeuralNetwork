@@ -1,12 +1,14 @@
 ﻿//Ethan Alexander Shulman 2017
 
+using NeuralNetwork.interfaces;
+
 namespace NeuralNetwork
 {
 
     /// <summary>
     /// Evolves a NeuralNetwork either through bruteforce evolution or breeding(genetic algorithm).
     /// </summary>
-    public class NeuralNetworkEvolver
+    public class NeuralNetworkEvolver : INeuralNetworkEvolver
     {
 
         /// <summary>
@@ -84,7 +86,7 @@ namespace NeuralNetwork
         {
             numThreads = nThreads;
             sourceNetwork = sourcenn;
-            inputOutputLossFunction = premadePerfFunc;
+            inputOutputLossFunction = PremadePerfFunc;
             inputData = inData;
             targetData = targetDat;
 
@@ -97,7 +99,7 @@ namespace NeuralNetwork
             for (int i = 0; i < nThreads; i++)
             {
                 int ci = i;
-                threads[i] = new Thread(() => evolverThread(ci));
+                threads[i] = new Thread(() => EvolverThread(ci));
                 readyNextData[i] = false;
 
                 subjects[i] = new NeuralNetworkProgram(sourcenn);
@@ -127,7 +129,7 @@ namespace NeuralNetwork
             for (int i = 0; i < nThreads; i++)
             {
                 int ci = i;
-                threads[i] = new Thread(() => evolverThread(ci));
+                threads[i] = new Thread(() => EvolverThread(ci));
                 readyNextData[i] = false;
 
                 subjects[i] = new NeuralNetworkProgram(sourcenn);
@@ -265,7 +267,6 @@ namespace NeuralNetwork
                             rtnn = new NeuralNetwork(nn);
                         }
 
-
                         //create new
                         if (breeding && bestLoss <= maxBreedingLoss)
                         {
@@ -300,8 +301,7 @@ namespace NeuralNetwork
             return rtnn;
         }
 
-
-        private void evolverThread(int id)
+        private void EvolverThread(int id)
         {
             NeuralNetworkProgram subject = subjects[id];
 
@@ -375,61 +375,6 @@ namespace NeuralNetwork
             }
         }
 
-
-        private void premadePerfFunc(NeuralNetworkProgram nnp)
-        {
-            nnp.hasOutput = false;
-
-            if (nnp.state != -1)
-            {
-                //calculate loss
-                float perf = 0.0f;
-                float[] odat = nnp.context.outputData,
-                        tdat = targetData[nnp.state];
-                int i = odat.Length;
-                while (i-- > 0)
-                {
-                    float amax = Math.Abs(odat[i] - tdat[i]);
-                    if (lossType == NeuralNetworkTrainer.LOSS_TYPE_AVERAGE)
-                    {
-                        perf += amax;
-                    }
-                    else
-                    {
-                        if (amax > perf) perf = amax;
-                    }
-                }
-                if (lossType == NeuralNetworkTrainer.LOSS_TYPE_AVERAGE)
-                {
-                    nnp.loss += perf / (float)odat.Length;
-                }
-                else
-                {
-                    if (perf > nnp.loss) nnp.loss = perf;
-                }
-
-                //advance state
-                nnp.state++;
-                if (nnp.state >= targetData.Length)
-                {
-                    nnp.total += nnp.state;
-                    nnp.state = -1;
-                }
-            }
-            else
-            {
-                nnp.state = 0;
-                nnp.total = 0;
-            }
-
-            if (nnp.state != -1)
-            {
-                //put next input data
-                Array.Copy(inputData[nnp.state], nnp.context.inputData, inputData[nnp.state].Length);
-                nnp.hasInput = true;
-            }
-        }
-
         /// <summary>
         /// Returns best neural network loss.
         /// </summary>
@@ -463,7 +408,6 @@ namespace NeuralNetwork
         {
             return (bestNetwork != null && secondBestNetwork != null);
         }
-
 
         public delegate void ProcessOutputInputGetLoss(NeuralNetworkProgram nnp);
         public delegate void ReachedGoalEventFunction();
@@ -532,6 +476,58 @@ namespace NeuralNetwork
             secondBestNetwork.Load(s);
         }
 
+        private void PremadePerfFunc(NeuralNetworkProgram nnp)
+        {
+            nnp.hasOutput = false;
 
+            if (nnp.state != -1)
+            {
+                //calculate loss
+                float perf = 0.0f;
+                float[] odat = nnp.context.outputData,
+                        tdat = targetData[nnp.state];
+                int i = odat.Length;
+                while (i-- > 0)
+                {
+                    float amax = Math.Abs(odat[i] - tdat[i]);
+                    if (lossType == NeuralNetworkTrainer.LOSS_TYPE_AVERAGE)
+                    {
+                        perf += amax;
+                    }
+                    else
+                    {
+                        if (amax > perf) perf = amax;
+                    }
+                }
+                if (lossType == NeuralNetworkTrainer.LOSS_TYPE_AVERAGE)
+                {
+                    nnp.loss += perf / (float)odat.Length;
+                }
+                else
+                {
+                    if (perf > nnp.loss) nnp.loss = perf;
+                }
+
+                //advance state
+                nnp.state++;
+                if (nnp.state >= targetData.Length)
+                {
+                    nnp.total += nnp.state;
+                    nnp.state = -1;
+                }
+            }
+            else
+            {
+                nnp.state = 0;
+                nnp.total = 0;
+            }
+
+            if (nnp.state != -1)
+            {
+                //put next input data
+                Array.Copy(inputData[nnp.state], nnp.context.inputData, inputData[nnp.state].Length);
+                nnp.hasInput = true;
+            }
+        }
     }
 }

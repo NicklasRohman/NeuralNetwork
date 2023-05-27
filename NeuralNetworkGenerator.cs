@@ -1,12 +1,14 @@
 ﻿//Ethan Alexander Shulman 2017
 
+using NeuralNetwork.interfaces;
+
 namespace NeuralNetwork
 {
 
     /// <summary>
     /// Used for generating input deltas from a desired target output.
     /// </summary>
-    public class NeuralNetworkGenerator
+    public class NeuralNetworkGenerator : INeuralNetworkGenerator
     {
 
         private bool hasRecurring;

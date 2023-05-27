@@ -1,11 +1,13 @@
 ﻿//Ethan Alexander Shulman 2017
+using NeuralNetwork.interfaces;
+
 namespace NeuralNetwork
 {
 
     /// <summary>
     /// Trains a NeuralNetwork on input and target data using AdaGrad.
     /// </summary>
-    public class NeuralNetworkTrainer
+    public class NeuralNetworkTrainer : INeuralNetworkTrainer
     {
         public delegate bool StreamNextData(ref float[][] inp, ref float[][] targ);
 
@@ -189,8 +191,6 @@ namespace NeuralNetwork
 
         }
 
-
-
         /// <summary>
         /// Initializes data states and starts training.
         /// </summary>
@@ -200,7 +200,7 @@ namespace NeuralNetwork
             StartInit();
 
             //start
-            thread = new Thread(processingThread);
+            thread = new Thread(ProcessingThread);
             thread.Start();
         }
         /// <summary>
@@ -246,17 +246,6 @@ namespace NeuralNetwork
         public long GetIterations()
         {
             return iterations;
-        }
-
-        //copies c1 recurring data to c2
-        private void CopyRecurringState(NeuralNetworkContext c1, NeuralNetworkContext c2)
-        {
-            int i = c1.hiddenRecurringData.Length;
-            while (i-- > 0)
-            {
-                if (c1.hiddenRecurringData[i] == null) continue;
-                Array.Copy(c1.hiddenRecurringData[i], c2.hiddenRecurringData[i], c1.hiddenRecurringData[i].Length);
-            }
         }
 
         /// <summary>
@@ -446,17 +435,6 @@ namespace NeuralNetwork
             }
         }
 
-        private void processingThread()
-        {
-
-            while (running)
-            {
-                Learn();
-                if (delay > 0) Thread.Sleep(delay);
-            }
-
-        }
-
         /// <summary>
         /// Returns true if StartInit/Start init has been called.
         /// </summary>
@@ -474,89 +452,26 @@ namespace NeuralNetwork
         {
             return lossDelta;
         }
-    }
 
-
-
-    /// <summary>
-    /// Derivative memory.
-    /// </summary>
-    public class NeuralNetworkDerivativeMemory
-    {
-        public float[][] weightMems, biasMems, recurrWeightMems, outputFullConnectedWeightMems, recurringBPBuffer, altRecurringBPBuffer;
-
-        public void Setup(NeuralNetwork nn)
+        private void ProcessingThread()
         {
-            biasMems = new float[nn.hiddenLayers.Length + 1][];
-            weightMems = new float[nn.hiddenLayers.Length + 1][];
-            recurrWeightMems = new float[nn.hiddenLayers.Length][];
-            recurringBPBuffer = new float[nn.hiddenLayers.Length][];
-            altRecurringBPBuffer = new float[nn.hiddenLayers.Length][];
 
-            for (int i = 0; i < nn.hiddenLayers.Length; i++)
+            while (running)
             {
-                weightMems[i] = new float[nn.hiddenConnections[i].numberOfSynapses];
-                biasMems[i] = new float[nn.hiddenLayers[i].numberOfNeurons];
-
-                if (nn.hiddenLayers[i].recurring)
-                {
-                    recurrWeightMems[i] = new float[nn.hiddenRecurringConnections[i].numberOfSynapses];
-                    recurringBPBuffer[i] = new float[nn.hiddenLayers[i].numberOfNeurons];
-                    altRecurringBPBuffer[i] = new float[nn.hiddenLayers[i].numberOfNeurons];
-                }
+                Learn();
+                if (delay > 0) Thread.Sleep(delay);
             }
 
-            int lid = nn.hiddenLayers.Length;
-            biasMems[lid] = new float[nn.outputLayer.numberOfNeurons];
-            weightMems[lid] = new float[nn.outputConnection.numberOfSynapses];
         }
 
-        public void SwapBPBuffers()
+        //copies c1 recurring data to c2
+        private void CopyRecurringState(NeuralNetworkContext c1, NeuralNetworkContext c2)
         {
-            float[][] temp = recurringBPBuffer;
-            recurringBPBuffer = altRecurringBPBuffer;
-            altRecurringBPBuffer = temp;
-        }
-
-        public void Reset()
-        {
-            for (int i = 0; i < biasMems.Length; i++)
+            int i = c1.hiddenRecurringData.Length;
+            while (i-- > 0)
             {
-                Utils.Fill(biasMems[i], 0.0f);
-                Utils.Fill(weightMems[i], 0.0f);
-                if (i < recurrWeightMems.Length && recurrWeightMems[i] != null)
-                {
-                    Utils.Fill(recurrWeightMems[i], 0.0f);
-                    Utils.Fill(recurringBPBuffer[i], 0.0f);
-                    Utils.Fill(altRecurringBPBuffer[i], 0.0f);
-                }
-                if (outputFullConnectedWeightMems != null && i < outputFullConnectedWeightMems.Length) Utils.Fill(outputFullConnectedWeightMems[i], 0.0f);
-            }
-        }
-
-        public void Scale(float s)
-        {
-            for (int i = 0; i < biasMems.Length; i++)
-            {
-                Utils.Multiply(biasMems[i], s);
-                Utils.Multiply(weightMems[i], s);
-                if (i < recurrWeightMems.Length && recurrWeightMems[i] != null)
-                {
-                    Utils.Multiply(recurrWeightMems[i], s);
-                }
-                if (outputFullConnectedWeightMems != null && i < outputFullConnectedWeightMems.Length) Utils.Multiply(outputFullConnectedWeightMems[i], s);
-            }
-        }
-
-        public void ResetOnlyBuffer()
-        {
-            for (int i = 0; i < biasMems.Length; i++)
-            {
-                if (i < recurrWeightMems.Length && recurrWeightMems[i] != null)
-                {
-                    Utils.Fill(recurringBPBuffer[i], 0.0f);
-                    Utils.Fill(altRecurringBPBuffer[i], 0.0f);
-                }
+                if (c1.hiddenRecurringData[i] == null) continue;
+                Array.Copy(c1.hiddenRecurringData[i], c2.hiddenRecurringData[i], c1.hiddenRecurringData[i].Length);
             }
         }
     }
@@ -625,7 +540,6 @@ namespace NeuralNetwork
             }
         }
 
-
         public void Reset()
         {
             loss = 0.0f;
@@ -634,7 +548,6 @@ namespace NeuralNetwork
                 Utils.Fill(buf[i], 0.0f);
                 if (i < recurrBuf.Length && recurrBuf[i] != null) Utils.Fill(recurrBuf[i], 0.0f);
             }
-
         }
     }
 
@@ -805,9 +718,6 @@ namespace NeuralNetwork
                     t[k] = m;
                 }
 
-
-
-
                 t = biases[i];
                 f = derivMem.biasMems[i];
                 w = bias[i];
@@ -835,8 +745,6 @@ namespace NeuralNetwork
 
                     t[k] = m;
                 }
-
-
 
                 t = i < recurringWeights.Length ? recurringWeights[i] : null;
                 if (t != null)
@@ -868,8 +776,6 @@ namespace NeuralNetwork
                         t[k] = m;
                     }
                 }
-
-
             }
         }
 
@@ -920,8 +826,6 @@ namespace NeuralNetwork
 
                     w[k] -= (learningRate * d);
                 }
-
-
 
                 if (recurrWeight[i] != null)
                 {

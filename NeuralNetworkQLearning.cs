@@ -1,11 +1,13 @@
 //Ethan Alexander Shulman 2017
 
+using NeuralNetwork.interfaces;
+
 namespace NeuralNetwork
 {
     /// <summary>
     /// Trains a NeuralNetwork through QLearning(action-reward system)
     /// </summary>
-    public class NeuralNetworkQLearning
+    public class NeuralNetworkQLearning : INeuralNetworkQLearning
     {
         /// <summary>
         /// 
@@ -172,37 +174,6 @@ namespace NeuralNetwork
 				sessions.Add(Utils.IntFromStream (s));
 		}
 
-
-        //copies c1 recurring data to c2
-        private void CopyRecurringState(NeuralNetworkContext c1, NeuralNetworkContext c2)
-        {
-            int i = c1.hiddenRecurringData.Length;
-            while (i-- > 0)
-            {
-                if (c1.hiddenRecurringData[i] == null) continue;
-                Array.Copy(c1.hiddenRecurringData[i], c2.hiddenRecurringData[i], c1.hiddenRecurringData[i].Length);
-            }
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private void SaveRecurringMemoryState()
-        {
-			float[][] hm = stackedRuntimeContext[0].hiddenRecurringData;
-			for (int i = 0; i < hm.Length; i++)
-            {
-                if (hm[i] != null)
-                {
-					Utils.FloatArrayToStream (hm [i], learningSessionStream);
-                }
-            }
-			beganSession = true;
-		}
-
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -338,19 +309,32 @@ namespace NeuralNetwork
         {
             return stackedRuntimeContext[0];
         }
-    }
 
-
-    public class QLearningContext
-    {
-        public int action;
-        public float[] input;
-
-        public QLearningContext(int a, float[] i)
+        //copies c1 recurring data to c2
+        private void CopyRecurringState(NeuralNetworkContext c1, NeuralNetworkContext c2)
         {
-            action = a;
-            input = new float[i.Length];
-            Array.Copy(i, input, i.Length);
+            int i = c1.hiddenRecurringData.Length;
+            while (i-- > 0)
+            {
+                if (c1.hiddenRecurringData[i] == null) continue;
+                Array.Copy(c1.hiddenRecurringData[i], c2.hiddenRecurringData[i], c1.hiddenRecurringData[i].Length);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void SaveRecurringMemoryState()
+        {
+            float[][] hm = stackedRuntimeContext[0].hiddenRecurringData;
+            for (int i = 0; i < hm.Length; i++)
+            {
+                if (hm[i] != null)
+                {
+                    Utils.FloatArrayToStream(hm[i], learningSessionStream);
+                }
+            }
+            beganSession = true;
         }
     }
 }
